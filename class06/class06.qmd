@@ -1,7 +1,7 @@
 ---
 title: "Class06: Writing functions in R"
 author: "Jihyun In (PID: A16955363"
-format: pdf
+format: gfm
 ---
 ## Introduction
 R code
