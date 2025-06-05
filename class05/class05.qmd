@@ -1,7 +1,7 @@
 ---
 title: "Data Viz with ggplot"
 author: "Jihyun In(PID: A16955363)"
-format: pdf
+format: gfm
 toc: true
 ---
 
