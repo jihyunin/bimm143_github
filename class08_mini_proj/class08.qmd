@@ -1,0 +1,317 @@
+---
+title: "class08"
+author: "Jihyun In (PID: A16955363)"
+format: pdf
+toc: true
+---
+
+## Background 
+
+This source provides materials for a class mini-project focused on unsupervised learning analysis of human breast cancer cell data. Students will conduct principal component analysis (PCA) for dimensionality reduction and then apply hierarchical and k-means clustering techniques. The project involves exploratory data analysis, interpreting PCA results, evaluating clustering performance by comparing cluster assignments to actual diagnoses, and optionally combining PCA with clustering. The goal is to identify potential groupings within the cell data based on their characteristics without prior knowledge of malignancy, and the project concludes with an application of the PCA model to classify new patient samples.
+
+## Data import
+
+Our data come from the U of Wisconsin Medical Center:
+
+```{r}
+wisc.df <- read.csv("WisconsinCancer.csv", row.names=1)
+head(wisc.df)
+
+```
+
+> Q. How many patients/samples are in this dataset?
+
+```{r}
+nrow(wisc.df)
+```
+
+> Q2. How many ofthe ovservations have a malignant diagnosis?
+
+```{r}
+table(wisc.df$diagnosis)
+
+```
+
+
+```{r}
+colnames(wisc.df)
+```
+
+
+```{r}
+length(grep("_mean", colnames(wisc.df), value = T))
+
+
+```
+
+There is a diagnosis column that is the clinician consensusthat I want to exclude form any further analysis. We will come back later and compare our results to this diagnosis. 
+
+```{r}
+diagnosis <- as.factor(wisc.df$diagnosis)
+wisc.data <- wisc.df[,-1]
+```
+## Clustering
+
+```{r}
+hc <-hclust(dist(wisc.data))
+
+plot(hc)
+
+```
+We can extract clusters form this rather poor dendrogram/tree with the `cutree()` command
+```{r}
+grps <- cutree(hc, k=2)
+```
+
+How many individuals in each cluster?
+```{r}
+table(grps)
+```
+```{r}
+table(diagnosis)
+```
+
+We can generate a cross-table that compares our cluster `grps` vector with our `diagnosis` vector values. 
+```{r}
+table(diagnosis, grps)
+```
+
+
+
+## Principal Component Analysis
+
+```{r}
+# Check column means and standard deviations
+colMeans(wisc.data)
+
+apply(wisc.data,2,sd)
+
+```
+
+The main function fo rPCA in base R is `prcomp()`. It has a default input parameter of `scale=FALSE`.
+
+```{r}
+head(mtcars)
+```
+We could do a PCA of this data as is, and it would be misleading...
+```{r}
+pc <- prcomp(mtcars)
+biplot(pc)
+```
+
+Let's look at the mean values of each column nd their standard deviations. 
+```{r}
+colMeans(mtcars)
+```
+```{r}
+apply(mtcars, 2, sd)
+```
+
+we can "scale" tis data before PCA to get a much better representation an danalysis of all the columns.
+
+```{r}
+mtscale <- scale(mtcars)
+```
+
+```{r}
+round(colMeans(mtscale))
+```
+```{r}
+apply(mtscale, 2, sd)
+```
+
+
+```{r}
+pc.scale <- prcomp(mtscale)
+```
+
+We can look at the two main results figures from PCA - the "PC plot" (a.k.a. score plot, orientation plot, or PC1 vs PC2 plot). The "loadings plot" show how the original variables contribute to the new PCs. 
+
+A loadings plot of the unscaled PCA results
+
+```{r}
+library(ggplot2)
+
+ggplot(pc.scale$rotation) + 
+  aes(PC1, rownames(pc$rotation)) + 
+  geom_col()
+```
+Scaled one:
+
+```{r}
+library(ggplot2)
+
+ggplot(pc$rotation) + 
+  aes(PC1, rownames(pc$rotation)) + 
+  geom_col()
+```
+
+PC plot of scaled PCA results
+```{r}
+library(ggrepel)
+ggplot(pc.scale$x) + 
+  aes(PC1, PC2, label=rownames(pc.scale$x)) + 
+  geom_point() + 
+  geom_text() + geom_text_repel()
+```
+
+> **Key point**: In general we will set `scale=TRUE` when we do PCA. This is not the default but probably should be...
+
+### PCA of wisc.data
+
+Now with our actual data: 
+We can check the sd and mean of the different columns in `wisc.data` to see if we need to scale - hint: we do!)
+
+```{r}
+colMeans(wisc.data)
+apply(wisc.data, 2,sd)
+```
+
+```{r}
+wisc.pr <- prcomp(wisc.data, scale=T)
+```
+
+To see how well PCA is doing here in terms of capturing the variance (or spread) in the data we can use the `summary()` function. 
+```{r}
+summary(wisc.pr)
+```
+
+Let's make the main PC1 vs. PC2
+```{r}
+ggplot(wisc.pr$x) + 
+  aes(PC1, PC2, col=diagnosis) + 
+  geom_point() + 
+  xlab("PC1(44.3%)") + 
+  ylab("PC2(18.97%)") 
+```
+
+
+> Q4. From your results, what proportion of the original variance is captured by the first principal components (PC1)?
+
+PC1 captures 44.27% of the variance.
+
+> Q5. How many principal components (PCs) are required to describe at least 70% of the original variance in the data?
+
+3 PCs are required to describe 70% of the original variance in the data. 
+
+> Q6. How many principal components (PCs) are required to describe at least 90% of the original variance in the data?
+
+7 PCs are required to describe 90% of the original variance in the data. 
+
+Creating the biplot:
+```{r}
+biplot(wisc.pr)
+```
+> Q7. What stands out to you about this plot? Is it easy or difficult to understand? Why?
+
+This is difficult to understand because there is a lot of data points. It is hardto gain any sorts of information from this plot.
+
+> Q8. Generate a similar plot for principal components 1 and 3. What do you notice about these plots?
+
+```{r}
+ggplot(wisc.pr$x) + 
+  aes(PC1, PC3, col=diagnosis) + 
+  geom_point() + 
+  xlab("PC1 (44.3%)") + 
+  ylab("PC3 (9.393%)") 
+```
+
+###Variance Explained
+
+```{r}
+pr.var <- wisc.pr$sdev^2
+head(pr.var)
+```
+
+```{r}
+# Variance explained by each principal component: pve
+pve <- pr.var / sum(pr.var)
+
+# Plot variance explained for each principal component
+plot(pve, xlab = "Principal Component", 
+     ylab = "Proportion of Variance Explained", 
+     ylim = c(0, 1), type = "o")
+```
+```{r}
+# Alternative scree plot of the same data, note data driven y-axis
+barplot(pve, ylab = "Precent of Variance Explained",
+     names.arg=paste0("PC",1:length(pve)), las=2, axes = FALSE)
+axis(2, at=pve, labels=round(pve,2)*100 )
+```
+
+
+
+> Q9. For the first principal component, what is the component of the loading vector (i.e. wisc.pr$rotation[,1]) for the feature concave.points_mean?
+
+```{r}
+wisc.pr$rotation[,1]
+```
+
+ The component is: -0.26085376
+
+
+
+> Q10. What is the minimum number of principal components required to explain 80% of the variance of the data?
+
+5 PCs are required to explain 80% of the data. 
+
+
+## Combining Methods
+
+We can take our PCA results and use them as a basis set for othe ranalysis such as clustering
+
+### Clustering on PCA results
+
+```{r}
+wisc.pr$x[,1:2]
+
+```
+
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:2]), method = "ward.D2")
+plot(wisc.pr.hclust)
+
+```
+
+We can "cut this tree to yield out clusters:
+```{r}
+pc.grps <- cutree(wisc.pr.hclust,k=2)
+table(pc.grps)
+```
+
+How do my cluster grps compare to the diagnosis?
+
+```{r}
+table(diagnosis, pc.grps)
+```
+
+
+> Q15. How well does the newly created model with four clusters separate out the two diagnoses?
+
+It does not separate out the two diagnoses very well. There are still different benign and malignant diagnoses in all the groups, mixed together. 
+
+> Q16. How well do the k-means and hierarchical clustering models you created in previous sections (i.e. before PCA) do in terms of separating the diagnoses? Again, use the table() function to compare the output of each model (wisc.km$cluster and wisc.hclust.clusters) with the vector containing the actual diagnoses.
+
+They did really badly. We do much better after PCA - the new pca variables (what we call a basis set) give us a much better separation of M and B. 
+
+## 7. Prediction
+
+We can use our PCA model for the analysis of new "unseen" data. In this case form U Mich. 
+```{r}
+#url <- "new_samples.csv"
+url <- "https://tinyurl.com/new-samples-CSV"
+new <- read.csv(url)
+npc <- predict(wisc.pr, newdata=new)
+npc
+```
+
+```{r}
+plot(wisc.pr$x[,1:2], col=diagnosis)
+points(npc[,1], npc[,2], col="blue", pch=16, cex=3)
+text(npc[,1], npc[,2], c(1,2), col="white")
+```
+
+> Q18. Which of these new patients should we prioritize for follow up based on your results?
+
+We should prioritize patient 2 for followups, since patient 2 has a profile similar to that of malignant patients. 
+
