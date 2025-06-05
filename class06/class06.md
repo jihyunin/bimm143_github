@@ -50,7 +50,7 @@ students <- c("jeff", "jeremy", "peter")
 sample(students, size = 5, replace=TRUE)
 ```
 
-    [1] "jeff"  "peter" "jeff"  "jeff"  "peter"
+    [1] "jeremy" "jeff"   "jeremy" "jeremy" "peter" 
 
 Now work with `bases` rather than `students`
 
@@ -59,7 +59,7 @@ bases <- c("A", "C", "G", "T")
 sample(bases, size=10, replace=TRUE)
 ```
 
-     [1] "G" "T" "G" "C" "C" "T" "T" "T" "C" "C"
+     [1] "A" "C" "T" "T" "C" "T" "T" "A" "G" "G"
 
 Now I have a working ‘snippet’ of code, so I can use this as the body of
 my first function version here:
@@ -75,18 +75,18 @@ generate_dna <- function(size=5){
 generate_dna(size=100)
 ```
 
-      [1] "G" "A" "T" "T" "A" "G" "G" "G" "T" "G" "T" "G" "T" "G" "G" "T" "T" "T"
-     [19] "T" "T" "C" "A" "A" "A" "A" "A" "C" "C" "A" "C" "G" "G" "A" "G" "A" "A"
-     [37] "A" "G" "T" "C" "C" "G" "C" "G" "T" "G" "C" "T" "A" "C" "A" "A" "G" "T"
-     [55] "A" "T" "G" "A" "A" "G" "T" "T" "C" "T" "G" "C" "A" "A" "A" "C" "C" "C"
-     [73] "C" "A" "A" "C" "G" "A" "T" "G" "A" "G" "G" "G" "A" "G" "T" "T" "C" "C"
-     [91] "G" "C" "C" "T" "A" "G" "G" "C" "T" "A"
+      [1] "T" "A" "A" "C" "C" "T" "A" "G" "T" "G" "T" "T" "C" "C" "C" "A" "A" "G"
+     [19] "A" "G" "T" "C" "A" "T" "G" "C" "T" "G" "A" "C" "C" "C" "T" "C" "G" "C"
+     [37] "C" "T" "G" "T" "A" "T" "T" "T" "T" "C" "G" "A" "A" "G" "G" "G" "C" "T"
+     [55] "A" "G" "C" "C" "A" "T" "G" "T" "T" "A" "T" "A" "T" "T" "A" "A" "C" "C"
+     [73] "T" "G" "G" "A" "A" "G" "C" "T" "A" "G" "G" "T" "C" "T" "A" "C" "T" "A"
+     [91] "A" "A" "G" "A" "C" "T" "A" "A" "T" "G"
 
 ``` r
 generate_dna()
 ```
 
-    [1] "A" "A" "C" "T" "C"
+    [1] "A" "T" "T" "A" "A"
 
 I want the ability to return a sequence like “AGTACCTG” string, i.e. a
 one element vector where the bases are all together.
@@ -107,7 +107,7 @@ generate_dna <- function(size=5, together=TRUE){
 generate_dna(together=FALSE)
 ```
 
-    [1] "T" "C" "G" "A" "G"
+    [1] "A" "A" "C" "C" "C"
 
 ## 3. Generate Protein function
 
@@ -145,8 +145,8 @@ ans <- sapply(6:12, generate_protein)
 ans
 ```
 
-    [1] "HAFMEN"       "LMFSFKR"      "ATPKHRDP"     "SGEEAYPLG"    "VCWEPDACDC"  
-    [6] "YLSKIRINWGF"  "NYNFNKTLLQLF"
+    [1] "VAHPYA"       "AHRSFHA"      "LETSHGFH"     "GHLKWEARR"    "MLGGNRLLSG"  
+    [6] "MVCPKNWHKIF"  "DLFDFVFIAPGE"
 
 It would be cool and useful if I could get FASTA format output.
 
@@ -154,13 +154,13 @@ It would be cool and useful if I could get FASTA format output.
 cat(ans, sep="\n")
 ```
 
-    HAFMEN
-    LMFSFKR
-    ATPKHRDP
-    SGEEAYPLG
-    VCWEPDACDC
-    YLSKIRINWGF
-    NYNFNKTLLQLF
+    VAHPYA
+    AHRSFHA
+    LETSHGFH
+    GHLKWEARR
+    MLGGNRLLSG
+    MVCPKNWHKIF
+    DLFDFVFIAPGE
 
 I want this to look like
 
@@ -177,19 +177,19 @@ cat(with.id, sep="\n")
 ```
 
     >ID.6
-    HAFMEN
+    VAHPYA
     >ID.7
-    LMFSFKR
+    AHRSFHA
     >ID.8
-    ATPKHRDP
+    LETSHGFH
     >ID.9
-    SGEEAYPLG
+    GHLKWEARR
     >ID.10
-    VCWEPDACDC
+    MLGGNRLLSG
     >ID.11
-    YLSKIRINWGF
+    MVCPKNWHKIF
     >ID.12
-    NYNFNKTLLQLF
+    DLFDFVFIAPGE
 
 > Q. Determine if these sequences can be found in nature or are they
 > unique? Why or why not?
